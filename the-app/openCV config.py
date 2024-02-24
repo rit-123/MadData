@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
+'''
 #cv2 open test for lunge
 cap = cv2.VideoCapture("./videos/Lunges/Lunge1.mp4")
 while cap.isOpened():
@@ -30,8 +31,6 @@ config_text = {
 }
 
 
-
-
 graph = mp.CalculatorGraph(graph_config = config_text)
 output_packets = []
 graph.observe_output_stream(
@@ -51,3 +50,8 @@ rgb_img = cv2.cvtColor(cv2.imread("./videos/Lunges/Lunge1.mp4"), cv2.COLOR_BGR2R
                                                                 data=rgb_img).at(1)
                        ))
 graph.close()
+
+
+'''
+
+
