@@ -29,6 +29,9 @@ config_text = {
     }
 }
 
+
+
+
 graph = mp.CalculatorGraph(graph_config = config_text)
 output_packets = []
 graph.observe_output_stream(
