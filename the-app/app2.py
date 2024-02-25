@@ -1,3 +1,7 @@
+'''
+    PROCESSING OF LUNGE VIDEOS
+'''
+
 import cv2
 import numpy as np
 import mediapipe as mp
@@ -13,9 +17,33 @@ VIDEO_FILES = ["the-app/Lunge1.mp4"]
 BG_COLOR = (192, 192, 192)  # gray
 
 output_file_name = "lunge_video_1.mp4"
-output_width = 640
+output_width = 750
 output_height = 480
 output_fps = 15
+
+prev_knee_1 = 999.9
+prev_knee_2 = 999.9
+down_count = 0
+CRITICAL_DOWN_COUNT = 5
+is_going_down = True
+critical_angles = []
+
+def critical(knee_1, knee_2):
+    global prev_knee_1, prev_knee_2, CRITICAL_DOWN_COUNT, down_count
+    if (knee_1 - prev_knee_1 > 0) and (knee_2 - prev_knee_2 > 0):
+        prev_knee_1 = knee_1
+        prev_knee_2 = knee_2
+        down_count += 1
+        if down_count == CRITICAL_DOWN_COUNT:
+            down_count = 0
+            return True
+        return False
+    else:
+        prev_knee_1 = knee_1
+        prev_knee_2 = knee_2
+        return False
+
+
 
 # l1, l2 and l3 are the POINTS of which the angle is to be calculated
 def getAngle(l1, l2, l3):
@@ -51,11 +79,13 @@ with mp_pose.Pose(
 
             if not results.pose_landmarks:
                 continue
-
+            if not critical(results.pose_landmarks.landmark[25].y, results.pose_landmarks.landmark[26].y):
+                continue
+            print("CRITICAL HIT")
             # Track the specified landmark indices
-            # landmarks_11_12_13 = [results.pose_landmarks.landmark[11],
-            #                        results.pose_landmarks.landmark[12],
-            #                        results.pose_landmarks.landmark[13]]
+            landmarks_11_12_13 = [results.pose_landmarks.landmark[11],
+                                   results.pose_landmarks.landmark[12],
+                                   results.pose_landmarks.landmark[13]]
             landmarks = [results.pose_landmarks.landmark[i] for i in range(1, 32)]
             angles_to_calculate = [(23,25,27), (24,26,28), (11,23,25), (12,24,26), (25,27,31), (26,28,32)]
             POINTS = []
@@ -75,8 +105,8 @@ with mp_pose.Pose(
             
             for i in angles_to_calculate:
                 angle = getAngle(i[0], i[1], i[2])
-                #print(angle)
-                cv2.putText(frame, str(int(angle)), (int(results.pose_landmarks.landmark[i[1]].x * image_width), int(results.pose_landmarks.landmark[i[1]].y * image_height)), cv2.FONT_ITALIC, 1, (0, 0, 255), 2, cv2.LINE_AA)
+                print(angle)
+                cv2.putText(frame, str(round(angle, 2)), (int(results.pose_landmarks.landmark[i[1]].x * image_width), int(results.pose_landmarks.landmark[i[1]].y * image_height)), cv2.FONT_ITALIC, 1, (0, 0, 255), 2, cv2.LINE_AA)
 
             extra_points = [(results.pose_landmarks.landmark[11], results.pose_landmarks.landmark[12]), (results.pose_landmarks.landmark[23], results.pose_landmarks.landmark[24])]
             for i in extra_points:
@@ -106,3 +136,4 @@ with mp_pose.Pose(
         cap.release()
         out.release()
         cv2.destroyAllWindows()
+
