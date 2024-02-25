@@ -121,7 +121,10 @@ class exercise_model:
     def evaluateData(self, means, std_devs, data):
         category = data[6]
         print(category)
+        print(data)
         for i, d in enumerate(data):
+            if i == 6:
+                continue
             if abs(d - means[category][i]) > std_devs[category][i]/2:
                 return f"Critical angle at index {i} is not in good form"
         return "good form"
@@ -149,6 +152,7 @@ critical_hit_counter = 1
 
 classifier = exercise_model("lungesClassified.csv")
 averages, std_devs = classifier.classifyStates(classifier.df)
+print("DATA EVALUATED")
 
 # 1 - left up
 # 2 - left down
@@ -198,7 +202,7 @@ def getAngle(l1, l2, l3):
 #####################################################################################################
 #####################################################################################################
 ############################################################################################
-VIDEO_FILES = ["the-app\WIN_20240225_10_23_43_Pro.mp4", "the-app\WIN_20240225_10_23_24_Pro.mp4"]
+VIDEO_FILES = ["the-app\WIN_20240225_10_23_24_Pro.mp4"]
 for video_idx, video_file in enumerate(VIDEO_FILES):
     cap = cv2.VideoCapture(video_file)
     with mp_pose.Pose(
@@ -265,5 +269,7 @@ for video_idx, video_file in enumerate(VIDEO_FILES):
             cv2.imshow('MediaPipe Pose', cv2.flip(image, 1))
             if cv2.waitKey(5) & 0xFF == 27:
                 break
+    
+
     
 cap.release()
