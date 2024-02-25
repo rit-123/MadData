@@ -6,7 +6,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 # For static images:
-IMAGE_FILES = ["videos/Lunges/lunge.png"]
+IMAGE_FILES = ["the-app/lunge.png"]
 BG_COLOR = (192, 192, 192) # gray
 with mp_pose.Pose(
     static_image_mode=True,
@@ -18,14 +18,26 @@ with mp_pose.Pose(
     image_height, image_width, _ = image.shape
     # Convert the BGR image to RGB before processing.
     results = pose.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-
+    # for i in results.pose_landmarks.landmark:
+    #     print(i)
     if not results.pose_landmarks:
       continue
-    print(
-        f'Nose coordinates: ('
-        f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * image_width}, '
-        f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * image_height})'
-    )
+    # print(
+    #     f'Nose coordinates: ('
+    #     f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].x * image_width}, '
+    #     f'{results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE].y * image_height})'
+    # )
+
+    i=0
+    for j in results.pose_landmarks.landmark:
+        if i != 11 or i!=12 or i!=13:
+           j.x = 0
+           j.y = 0
+           j.z = 0
+        #    visibility= j.visibility
+        #    print(x,y,z,visibility)
+        i+=1
+    
 
     annotated_image = image.copy()
     # Draw segmentation on the image.
