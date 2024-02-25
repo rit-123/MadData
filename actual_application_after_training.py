@@ -24,23 +24,109 @@ class exercise_model:
         return error_rates
     
     def classifyStates(self, dfToCheck):
-        array1 = self.df[self.df[:6] == 1].iloc[:, :-1].values
-        array2 = self.df[self.df[:6] == 2].iloc[:, :-1].values
-        array3 = self.df[self.df[:6] == 3].iloc[:, :-1].values
-        array4 = self.df[self.df[:6] == 4].iloc[:, :-1].values
+        # array1 = self.df[self.df[:6] == 1].iloc[:, :-1].values
+        # array2 = self.df[self.df[:6] == 2].iloc[:, :-1].values
+        # array3 = self.df[self.df[:6] == 3].iloc[:, :-1].values
+        # array4 = self.df[self.df[:6] == 4].iloc[:, :-1].values
+
+        array1 = []
+        array2 = []
+        array3 = []
+        array4 = []
+
+
+        with open("lungesClassified.csv", mode='r', newline='') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                for i in range(len(row) - 1):
+                    row[i] = float(row[i])
+                    row[6] = int(row[6])
+            if row[6] == 1:
+                array1.append(row)
+            elif row[6] == 2:
+                array2.append(row)
+            elif row[6] == 3:
+                array3.append(row)
+            elif row[6] == 4:
+                array4.append(row)
+
+        
+        MEANS = {1: [0,0,0,0,0,0], 2:[0,0,0,0,0,0], 3:[0,0,0,0,0,0], 4:[0,0,0,0,0,0]}
+        STD_DEVS = {1: [[],[],[],[],[],[]], 2:[[],[],[],[],[],[]], 3:[[],[],[],[],[],[]], 4:[[],[],[],[],[],[]]}
+
+        no_of_readings  = len(array1) + len(array2) + len(array3) + len(array4)
+        # category = 1
+
+        for i in range(len(array1)):
+            for j in range(6):
+            # print(i)
+            # print(len(array1))
+            # print(array1)
+                MEANS[1][j] += array1[i][j]
+                STD_DEVS[1][j] = array1[i][j]
+
+        for i in range(len(array2)):
+            for j in range(6):
+            # print(i)
+            # print(len(array1))
+            # print(array1)
+                MEANS[2][j] += array2[i][j]
+                STD_DEVS[2][j] = array2[i][j]
+
+        for i in range(len(array3)):
+            for j in range(6):
+            # print(i)
+            # print(len(array1))
+            # print(array1)
+                MEANS[3][j] += array3[i][j]
+                STD_DEVS[3][j] = array3[i][j]
+        
+        for i in range(len(array4)):
+            for j in range(6):
+            # print(i)
+            # print(len(array1))
+            # print(array1)
+                MEANS[4][j] += array4[i][j]
+                STD_DEVS[1][j] = array4[i][j]
+        # for i in range(6):
+        #     MEANS[2][i] += array1[i]
+        # for i in range(6):
+        #     MEANS[3][i] += array1[i]
+        # for i in range(6):
+        #     MEANS[4][i] += array4[i]
+            
+        for category in range(1, len(MEANS) + 1):
+            for i in range(len(MEANS[category])):
+                MEANS[category][i] = MEANS[category][i] / no_of_readings
+
+        for category in range(1, len(STD_DEVS)+1):
+            for i in range(len(MEANS[category])):
+                STD_DEVS[category][i] = np.std(STD_DEVS[category][i])
+        
+
 
         mean1, std_dev1 = np.mean(array1, axis=0), np.std(array1, axis=0)
         mean2, std_dev2 = np.mean(array2, axis=0), np.std(array2, axis=0)
         mean3, std_dev3 = np.mean(array3, axis=0), np.std(array3, axis=0)
         mean4, std_dev4 = np.mean(array4, axis=0), np.std(array4, axis=0)
 
-        return (mean1, mean2, mean3, mean4), (std_dev1, std_dev2, std_dev3, std_dev4)
+        return MEANS, STD_DEVS
 
+    # def evaluateData(self, means, std_devs, data):
+    #     for i, (mean, std_dev, d) in enumerate(means, std_devs, data):
+    #         if np.any(np.abs(d - mean) > std_dev/2):
+    #             return f"Critical angle at index {i} is not in good form"
+    #     return "good form"
+    
     def evaluateData(self, means, std_devs, data):
-        for i, (mean, std_dev, d) in enumerate(zip(means, std_devs, data)):
-            if np.any(np.abs(d - mean) > std_dev):
+        category = data[6]
+        print(category)
+        for i, d in enumerate(data):
+            if abs(d - means[category][i]) > std_devs[category][i]/2:
                 return f"Critical angle at index {i} is not in good form"
         return "good form"
+
+        
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -112,9 +198,9 @@ def getAngle(l1, l2, l3):
 #####################################################################################################
 #####################################################################################################
 ############################################################################################
-VIDEO_FILES = ["the-app/Lunge1.mp4"]
+VIDEO_FILES = ["the-app\WIN_20240225_10_23_43_Pro.mp4", "the-app\WIN_20240225_10_23_24_Pro.mp4"]
 for video_idx, video_file in enumerate(VIDEO_FILES):
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(video_file)
     with mp_pose.Pose(
         static_image_mode=False,
         model_complexity=2,
