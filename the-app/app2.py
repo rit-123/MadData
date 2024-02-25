@@ -13,7 +13,7 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_pose = mp.solutions.pose
 
 # Array of MP4 file paths
-VIDEO_FILES = ["the-app/Lunge6.mp4"]
+VIDEO_FILES = ["the-app/Lunge5.mp4"]
 
 BG_COLOR = (192, 192, 192)  # gray
 
@@ -31,9 +31,27 @@ critical_angles = []
 critical_hit_counter = 1
 
 
-file = open('lunges6.csv', mode='a', newline='')
+file = open('lungesClassified.csv', mode='a', newline='')
 writer = csv.writer(file)
 #writer.writerow(['Angle1'])
+
+# 1 - left up
+# 2 - left down
+# 3 - right up
+# 4 - right down
+def getCategory(leftX, rightX, leftY, rightY):
+    # right up
+    if (leftX < rightX and abs(leftY - rightY) < 0.1):
+        return 3
+    # right down
+    elif (leftX < rightX and abs(leftY - rightY) >= 0.1):
+        return 4
+
+    # left up
+    elif (leftX > rightX and abs(leftY - rightY) < 0.1):
+        return 1
+    elif (leftX > rightX and abs(leftY - rightY) >= 0.1):
+        return 2
 
 def critical(knee_1, knee_2):
     global prev_knee_1, prev_knee_2, CRITICAL_DOWN_COUNT, down_count, is_going_down
@@ -87,9 +105,11 @@ with mp_pose.Pose(
 
             if not results.pose_landmarks:
                 continue
+
+            # Checks to see if it is a critical point
             if not critical(results.pose_landmarks.landmark[25].y, results.pose_landmarks.landmark[26].y):
                 continue
-            print("CRITICAL HIT")
+            print("critical point")
             # Track the specified landmark indices
             landmarks_11_12_13 = [results.pose_landmarks.landmark[11],
                                    results.pose_landmarks.landmark[12],
@@ -115,6 +135,8 @@ with mp_pose.Pose(
                 angle = getAngle(i[0], i[1], i[2])
                 critical_angles.append(angle)
                 cv2.putText(frame, str(round(angle, 2)), (int(results.pose_landmarks.landmark[i[1]].x * image_width), int(results.pose_landmarks.landmark[i[1]].y * image_height)), cv2.FONT_ITALIC, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            category = getCategory(results.pose_landmarks.landmark[25].x, results.pose_landmarks.landmark[26].x, results.pose_landmarks.landmark[25].y, results.pose_landmarks.landmark[26].y)
+            critical_angles.append(category)
             writer.writerow(critical_angles)
             critical_angles = []
             extra_points = [(results.pose_landmarks.landmark[11], results.pose_landmarks.landmark[12]), (results.pose_landmarks.landmark[23], results.pose_landmarks.landmark[24])]
