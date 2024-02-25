@@ -30,14 +30,8 @@ with mp_pose.Pose(
 
     i=0
     for j in results.pose_landmarks.landmark:
-        if i != 11 or i!=12 or i!=13:
-           j.x = 0
-           j.y = 0
-           j.z = 0
-        #    visibility= j.visibility
-        #    print(x,y,z,visibility)
-        i+=1
-    
+        print()
+    print(results.pose_landmarks.landmark[2]) 
 
     annotated_image = image.copy()
     # Draw segmentation on the image.
